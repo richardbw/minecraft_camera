@@ -24,7 +24,6 @@ pp = pprint.PrettyPrinter(indent=4)  # USED?
 
 def main():
     log.info("Starting "+sys.argv[0])
-    #GPIO.setwarnings(False) # Ignore warning for now
     GPIO.setup(GPIO_BUTTON_PIN, GPIO.IN,    pull_up_down=GPIO.PUD_DOWN)
     GPIO.setup(GPIO_LED_PIN,    GPIO.OUT,   initial=GPIO.LOW)
 
@@ -37,10 +36,8 @@ def main():
       
     except KeyboardInterrupt:  
         log.warn("Caught ^C, and exiting")
-      
     except:  
         log.exception("Unexpected exception occurred! ")
-      
     finally:  
         log.debug("Cleaning up GPIO.")
         GPIO.cleanup() # this ensures a clean exit  
