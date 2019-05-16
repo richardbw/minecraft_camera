@@ -13,20 +13,27 @@ logger = logging.getLogger()     # https://docs.aws.amazon.com/lambda/latest/dg/
 logger.setLevel(logging.DEBUG)   #
 
 def lambda_handler(event, context):
-    logger.debug("Start rbw-pi-trigger-ml-generate-mp3")
-    logger.debug("Received: event: %s, context: %s" %(event, context))
+    logger.debug("RBW> Start rbw-pi-trigger-ml-generate-mp3--------------------------------------------------")
+    logger.debug("RBW> Received: event: %s, context: %s" %(event, context))
 
-    gen_mp3(
+    s3_mp3_key = gen_mp3(
         event['Records'][0]['body'],
         event["Records"][0]["messageId"])
 
-    logger.debug(" /End rbw-pi-trigger-ml-generate-mp3")
+    sns = boto3.client('sns')
+    response = sns.publish(
+        TopicArn=os.environ['SNS_ARN_GENERATED_NOTIF'],    
+        Message="Generated MP3> %s:%s"%(os.environ['S3_MP3_OUTPUT_BUCKET'], s3_mp3_key),    
+    )
+    logger.debug("RBW> SNS publish response: "+ str(response))
+
+    logger.debug("RBW>  /End rbw-pi-trigger-ml-generate-mp3")
 
 
 
 #   https://aws.amazon.com/blogs/machine-learning/build-your-own-text-to-speech-applications-with-amazon-polly/:
 def gen_mp3(text,messageId):
-    logger.debug("Turning [%s] into mp3, as [%s]" %(text, os.environ['POLLY_VOICEID']) )
+    logger.debug("RBW> ===== Turning [%s] into mp3, as [%s]" %(text, os.environ['POLLY_VOICEID']) )
 
     polly = boto3.client('polly')
     response = polly.synthesize_speech(
@@ -44,13 +51,14 @@ def gen_mp3(text,messageId):
                 file.write(stream.read())
 
     s3_mp3_key = os.environ['S3_MP3_OUTPUT_KEYPREF']+messageId + ".mp3"
-    logger.debug("Uploading to S3[%s][%s]" %(os.environ['S3_MP3_OUTPUT_BUCKET'], s3_mp3_key) )
+    logger.debug("RBW> Uploading to S3[%s][%s]" %(os.environ['S3_MP3_OUTPUT_BUCKET'], s3_mp3_key) )
     s3 = boto3.client('s3')
     s3.upload_file('/tmp/' + messageId, 
         os.environ['S3_MP3_OUTPUT_BUCKET'],
         s3_mp3_key) 
 
-    logger.debug(" / Done Uploading ")
+    logger.debug("RBW>  / Done Uploading: "+s3_mp3_key)
+    return s3_mp3_key
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 #//EOF
