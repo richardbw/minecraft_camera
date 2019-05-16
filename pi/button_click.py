@@ -65,7 +65,7 @@ def main():
             #:message = input("Press ENTER to quit: ")
       
     except KeyboardInterrupt:  
-        log.warn("Caught ^C, and exiting")
+        log.warning("Caught ^C, and exiting")
     except:  
         log.exception("Unexpected exception occurred! ")
     finally:  

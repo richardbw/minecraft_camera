@@ -65,7 +65,7 @@ def main():
     if len(sys.argv) != 2:
         raise ValueError("No filename given on cmd line...")
 
-    file = open(sys.argv[1], 'r+')   #self upload
+    file = open(sys.argv[1], 'rb+')   #self upload
     key = FOLDER_PREFIX+os.path.basename(file.name)
 
     print("Uploading to S3> %s:%s" %(BUCKET, key))
