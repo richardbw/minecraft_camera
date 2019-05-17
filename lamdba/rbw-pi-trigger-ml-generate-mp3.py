@@ -8,9 +8,9 @@ import os
 import json
 import boto3
 from contextlib import closing
-import logging                   #
-logger = logging.getLogger()     # https://docs.aws.amazon.com/lambda/latest/dg/python-logging.html
-logger.setLevel(logging.DEBUG)   #
+import logging                          #
+logger = logging.getLogger(__name__)    # https://docs.aws.amazon.com/lambda/latest/dg/python-logging.html
+logger.setLevel(logging.DEBUG)          #
 
 def lambda_handler(event, context):
     logger.debug("RBW> Start rbw-pi-trigger-ml-generate-mp3--------------------------------------------------")
@@ -25,8 +25,8 @@ def lambda_handler(event, context):
         TopicArn=os.environ['SNS_ARN_GENERATED_NOTIF'],    
         Message="Generated MP3> %s:%s"%(os.environ['S3_MP3_OUTPUT_BUCKET'], s3_mp3_key),    
     )
-    logger.debug("RBW> SNS publish response: "+ str(response))
 
+    logger.debug("RBW> SNS publish response: "+ str(response))
     logger.debug("RBW>  /End rbw-pi-trigger-ml-generate-mp3")
 
 
