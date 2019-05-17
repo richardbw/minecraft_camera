@@ -12,6 +12,8 @@ log = logging.getLogger(__name__)               # https://coloredlogs.readthedoc
 coloredlogs.install(level='DEBUG', logger=log)  #  
 
 REGEX_GENERATED_MP3_STR = re.compile(r"MP3> ([a-z0-9-]+):([a-z0-9-\/\.]+.mp3)")
+POLL_SLEEP=5
+
 
 # Create SQS client
 sqs = boto3.client('sqs')
@@ -31,25 +33,29 @@ def process_response(response):
 
     log.debug("Message handle: %s, body: %s" %(receipt_handle, message_body))
 
-    # Delete received message from queue
-    sqs.delete_message(
-        QueueUrl=queue_url,
-        ReceiptHandle=receipt_handle
-    )
+    try:
+        # Delete received message from queue
+        sqs.delete_message(
+            QueueUrl=queue_url,
+            ReceiptHandle=receipt_handle
+        )
 
-    log.info('Deleted message: %s' % receipt_handle)
+        log.info('Deleted message: %s' % receipt_handle)
 
-    match_groups = REGEX_GENERATED_MP3_STR.search(message_body)
-    s3_bucket_name = match_groups.group(1)
-    s3_bucket_key  = match_groups.group(2)
+        match_groups = REGEX_GENERATED_MP3_STR.search(message_body)
+        s3_bucket_name = match_groups.group(1)
+        s3_bucket_key  = match_groups.group(2)
 
-    log.debug("s3_bucket_name : |%s|" % s3_bucket_name)
-    log.debug("s3_bucket_key  : |%s|" % s3_bucket_key )
+        log.debug("s3_bucket_name : |%s|" % s3_bucket_name)
+        log.debug("s3_bucket_key  : |%s|" % s3_bucket_key )
 
-    with open(s3_bucket_key, 'wb+') as data:
-        s3.download_fileobj(s3_bucket_name, s3_bucket_key, data)
+        with open(s3_bucket_key, 'wb+') as data:
+            s3.download_fileobj(s3_bucket_name, s3_bucket_key, data)
 
-    log.info ("Saved          : " + s3_bucket_key )
+        log.info ("Saved          : " + s3_bucket_key )
+    except:  
+        log.exception("Unexpected exception occurred! ")
+
 
 
 def main():
@@ -65,19 +71,11 @@ def main():
             response = sqs.receive_message(
                 QueueUrl=queue_url
             )
-            #response = sqs.receive_message(
-            #    QueueUrl=queue_url,
-            #    AttributeNames=[ 'SentTimestamp' ],
-            #    MaxNumberOfMessages=1,
-            #    MessageAttributeNames=[ 'All' ],
-            #    VisibilityTimeout=0,
-            #    WaitTimeSeconds=0
-            #)
 
             log.debug('Received: %s' % response)
 
             process_response(response)
-            time.sleep( 5 )
+            time.sleep( POLL_SLEEP )
 
     except KeyboardInterrupt:  
         log.warning("Caught ^C, and exiting")
