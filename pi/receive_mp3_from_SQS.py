@@ -15,6 +15,7 @@ REGEX_GENERATED_MP3_STR = re.compile(r"MP3> ([a-z0-9-]+):([a-z0-9-\/\.]+.mp3)")
 
 # Create SQS client
 sqs = boto3.client('sqs')
+s3  = boto3.client('s3')
 
 queue_url = 'https://sqs.us-east-1.amazonaws.com/688142363120/rbw-pi-ml-face-recog-generated-mp3'
 
@@ -44,6 +45,8 @@ def process_response(response):
 
     log.debug("s3_bucket_name : " + s3_bucket_name)
     log.debug("s3_bucket_key  : " + s3_bucket_key )
+
+    s3.download_file(s3_bucket_name, s3_bucket_key, s3_bucket_key )
 
 
 def main():

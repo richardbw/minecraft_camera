@@ -5,6 +5,7 @@
 /img/photobooth.jpg
 /img/selfie.jpg
 .DS_Store
+pi/mp3/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
