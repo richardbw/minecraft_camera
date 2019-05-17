@@ -43,10 +43,13 @@ def process_response(response):
     s3_bucket_name = match_groups.group(1)
     s3_bucket_key  = match_groups.group(2)
 
-    log.debug("s3_bucket_name : " + s3_bucket_name)
-    log.debug("s3_bucket_key  : " + s3_bucket_key )
+    log.debug("s3_bucket_name : |%s|" % s3_bucket_name)
+    log.debug("s3_bucket_key  : |%s|" % s3_bucket_key )
 
-    s3.download_file(s3_bucket_name, s3_bucket_key, s3_bucket_key )
+    with open(s3_bucket_key, 'wb+') as data:
+        s3.download_fileobj(s3_bucket_name, s3_bucket_key, data)
+
+    log.info ("Saved          : " + s3_bucket_key )
 
 
 def main():
@@ -60,13 +63,16 @@ def main():
         while True:
             # Receive message from SQS queue
             response = sqs.receive_message(
-                QueueUrl=queue_url,
-                AttributeNames=[ 'SentTimestamp' ],
-                MaxNumberOfMessages=1,
-                MessageAttributeNames=[ 'All' ],
-                VisibilityTimeout=0,
-                WaitTimeSeconds=0
+                QueueUrl=queue_url
             )
+            #response = sqs.receive_message(
+            #    QueueUrl=queue_url,
+            #    AttributeNames=[ 'SentTimestamp' ],
+            #    MaxNumberOfMessages=1,
+            #    MessageAttributeNames=[ 'All' ],
+            #    VisibilityTimeout=0,
+            #    WaitTimeSeconds=0
+            #)
 
             log.debug('Received: %s' % response)
 

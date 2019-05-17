@@ -6,6 +6,7 @@
 /img/selfie.jpg
 .DS_Store
 pi/mp3/*
+*.swp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
