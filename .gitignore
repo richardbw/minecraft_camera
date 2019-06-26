@@ -7,6 +7,7 @@
 .DS_Store
 pi/mp3/*
 *.swp
+*.bak
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

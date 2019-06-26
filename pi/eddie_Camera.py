@@ -30,7 +30,7 @@ upload(img_path)
 exit()
 
 
-#Eddie's core from here: 
+#Eddie's code from here: 
 #------------------------
 
 mc = Minecraft.create()
