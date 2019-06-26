@@ -9,21 +9,32 @@
 #   based on Eddie's original code
 #
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import os,sys,configparser
+import os,sys,boto3,configparser
 from mcpi.minecraft import Minecraft
 from picamera import PiCamera
 from time import sleep
-from upload_file_to_S3 import *
+
 import coloredlogs, logging                     #
 log = logging.getLogger(__name__)               # https://coloredlogs.readthedocs.io/en/latest/readme.html#usage
 coloredlogs.install(level='DEBUG', logger=log)  #  
 
-POS_X = -0.3
-POS_Y =  2.0
-POS_Z =  1.3
+POS_X           = -6.5
+POS_Y           =  2.0
+POS_Z           =  5.5
+Z_VARIANCE      =  0.2
+BUCKET          = 'rbw-pi-camera-uploads-01'
+FOLDER_PREFIX   = 'uploads/'  #trailing '/'
 
 img_path = os.path.dirname(os.path.abspath(__file__)) +'/img/photobooth.jpg'
 
+def upload(img): #{{{
+    file = open(img, 'rb+')
+    s3  = boto3.client('s3')
+    key = FOLDER_PREFIX+os.path.basename(file.name)
+    log.debug("Uploading %s to AWS S3> %s:%s..." % (img, BUCKET, key))
+    s3.upload_fileobj(file, BUCKET, key)
+    log.debug  ('  Upload worked!')
+#}}}
 
 def main():
     log.info("Starting "+sys.argv[0])
@@ -37,6 +48,7 @@ def main():
 
         # setup mincraft:
         mc = Minecraft.create()
+        log.debug("Connected to Minecraft.")
         mc.postToChat("Hi! Photobooth script is connected (y)")
     except:  
         log.exception("Either camera or minecraft error; pls check stacktrace. ")
@@ -45,29 +57,31 @@ def main():
 
 
     try:
-
         log.info("Starting to listen  (^C to stop)...")
         while True:
             x,y,z,=mc.player.getPos()
 
             sleep(3)
 
-            if (( x >= POS_X) and (y == POS_Y) and (z == POS_Z)):
-                mc.postToChat("welcome to the photobooth")
-                sleep(2)
+            if (( x >= POS_X) and (y == POS_Y) and ((POS_Z - Z_VARIANCE) <= z <= (POS_Z + Z_VARIANCE)) ):
+                mc.postToChat("Welcome to the photobooth")
+                sleep(1)
                 mc.postToChat("Smile! :-)")
                 sleep(1)
                 camera.start_preview()
                 sleep(3)
-                print("Saving image to: %s "%img_path)
+                log.debug("Saving image to: %s "%img_path)
                 camera.capture(img_path)
                 camera.stop_preview()
+                mc.postToChat("SNAP! Uploading to AWS for processing...")
 
-                print("Uploading img (%s) to AWS S3... "%img_path)
+                log.debug("Uploading img (%s) to AWS S3... "%img_path)
                 upload(img_path)
+                mc.postToChat("Upload complete.")
 
     except KeyboardInterrupt:  
         log.warning("Caught ^C, and exiting")
+        mc.postToChat("Photobooth script disconnected")
     except:  
         log.exception("Unexpected exception occurred! ")
 
