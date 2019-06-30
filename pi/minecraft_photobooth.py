@@ -43,7 +43,7 @@ def main():
     try:
         # setup camera:
         camera =PiCamera()
-        camera.hflip = True 
+        #camera.hflip = True 
         log.debug("Camera connected.")
 
         # setup mincraft:
@@ -78,6 +78,7 @@ def main():
                 log.debug("Uploading img (%s) to AWS S3... "%img_path)
                 upload(img_path)
                 mc.postToChat("Upload complete.")
+                sleep(5)  # pause to let user get out of the way
 
     except KeyboardInterrupt:  
         log.warning("Caught ^C, and exiting")
