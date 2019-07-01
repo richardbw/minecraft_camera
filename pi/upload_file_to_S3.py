@@ -16,7 +16,7 @@ FOLDER_PREFIX           = 'uploads/'  #trailing '/'
 AWS_CREDS_FILE          = '~/.aws/credentials'
 AWS_CREDS_SECTION       = 'default'
 
-def upload_to_s3(aws_access_key_id, aws_secret_access_key, file, bucket, key, callback=None, md5=None, reduced_redundancy=False, content_type=None):
+def upload_to_s3(aws_access_key_id, aws_secret_access_key, file, bucket, key, callback=None, md5=None, reduced_redundancy=False, content_type=None): # {{{
     """
     Uploads the given file to the AWS S3
     bucket and key specified.
@@ -55,7 +55,7 @@ def upload_to_s3(aws_access_key_id, aws_secret_access_key, file, bucket, key, ca
     if sent == size:
         return True
     return False
-
+#}}}
 
 
 def main():

@@ -6,7 +6,6 @@
 #	https://boto3.amazonaws.com/v1/documentation/api/latest/guide/sqs-example-sending-receiving-msgs.html
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import boto3,re,time,sys,os
-import pygame
 
 import coloredlogs, logging                     #
 log = logging.getLogger(__name__)               # https://coloredlogs.readthedocs.io/en/latest/readme.html#usage
@@ -65,11 +64,14 @@ def process_response(response): #{{{
 
 def play_mp3(mp3_filename):  #{{{
     VOLUME = 5000
-    cmdline = 'mpg321 -g %s %s &'  % (VOLUME, mp3_filename)
-    log.debug("Will execute: "+cmdline)
-    os.system(cmdline)
+    if os.uname()[4].startswith("arm"): # test if on Pi  TODO: rather check if mpg321 is on the PATH
+        cmdline = 'mpg321 -g %s %s &'  % (VOLUME, mp3_filename)
+        log.debug("Will execute: "+cmdline)
+        os.system(cmdline)
 
-    log.debug("Sound play done.")
+        log.debug("Sound play done.")
+    else:
+        log.warn("This script doesn't seem to be running on the Pi. SOUND WON'T PLAY")
 #}}}
 
 
